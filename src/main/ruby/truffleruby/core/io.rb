@@ -874,15 +874,21 @@ class IO
     raise IOError, 'stream is closed' if closed?
     raise TypeError, 'advice must be a Symbol' unless Primitive.is_a?(advice, Symbol)
 
-    unless [:normal, :sequential, :random, :noreuse, :dontneed, :willneed].include? advice
-      raise NotImplementedError, "Unsupported advice: #{advice}"
-    end
+    advice_map = {
+      normal: 0,
+      sequential: 0,
+      random: 0,
+      noreuse: 0,
+      dontneed: 0,
+      willneed: 0,
+    }
+    advice = advice_map[advice] || raise(NotImplementedError, "Unsupported advice: #{advice}")
+    offset = Primitive.rb_num2long offset
+    len = Primitive.rb_num2long len
 
-    _offset = Primitive.rb_num2long offset
-    _len = Primitive.rb_num2long len
-
-    # Primitive.io_advise self, advice, offset, len
-    raise 'IO#advise not implemented'
+    errno  = Truffle::POSIX.posix_fadvise(Primitive.io_fd(self), offset, len, advice)
+    Errno.handle_errno(errno) unless errno == 0
+    nil
   end
 
   # Autoclose really represents whether this IO object owns the

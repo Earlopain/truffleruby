@@ -213,6 +213,7 @@ module Truffle::POSIX
   attach_function :open, [:string, :int, varargs(:mode_t)], :int
   attach_function :opendir, [:string], :pointer
   attach_function :pipe, [:pointer], :int
+  attach_function :posix_fadvise, [:int, :off_t, :off_t, :int], :int
   # blocking=false for both poll because the timeout needs to be decreased on EINTR
   attach_function :truffleposix_poll_single_fd, [:int, :int, :int], :int, LIBTRUFFLEPOSIX
   attach_function :poll, [:pointer, :nfds_t, :int], :int
