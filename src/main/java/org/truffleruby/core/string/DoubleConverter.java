@@ -121,21 +121,6 @@ public final class DoubleConverter {
         }
     }
 
-    private boolean eatUnderscores() {
-        while (!isEOS()) {
-            byte value = next();
-
-            if (value != '_') {
-                previous();
-                return isEOS();
-            } else if (isStrict) {
-                strictError();
-            }
-        }
-
-        return true;
-    }
-
     private double completeCalculation() {
         if (charsIndex == 0 || (charsIndex == 1 && chars[0] == '-')) { // "" or "-"
             strictError(); // Strict requires at least one digit.
@@ -170,6 +155,7 @@ public final class DoubleConverter {
         if (isStrict) {
             throw new LightweightNumberFormatException("does not meet strict criteria");
         } else {
+            stopParsing();
             return true; // means EOS for non-strict
         }
     }
@@ -217,8 +203,10 @@ public final class DoubleConverter {
 
         if (sign == '-') {
             addToResult(sign);
-        } else if (sign != '+') {
-            previous();  // backup...not a sign-char
+        } else if (sign == '+') {
+            // Do nothing
+        } else {
+            strictError();
         }
 
         return isEOS();
@@ -339,10 +327,6 @@ public final class DoubleConverter {
     }
 
     private boolean parseExponent() {
-        if (eatUnderscores()) {
-            return isEOS();
-        }
-
         byte value = next();
 
         int exponent = 0;
@@ -351,8 +335,10 @@ public final class DoubleConverter {
 
         if (value == '-') {
             negative = true;
-        } else if (value != '+') {
-            previous(); // backup...not a sign-char
+        } else if (value == '+') {
+            // Do nothing
+        } else {
+            strictError();
         }
 
         while (!isEOS()) {
@@ -375,7 +361,6 @@ public final class DoubleConverter {
                 verifyNumberAfterUnderscore();
             } else {
                 strictError();
-                stopParsing();
                 break;
             }
         }
@@ -413,7 +398,7 @@ public final class DoubleConverter {
     }
 
     private void verifyNumberAfterUnderscore() {
-        if (isStrict && (isEOS() || !isDigit(bytes[index]))) {
+        if (isEOS() || !isDigit(bytes[index])) {
             strictError();
         }
     }
