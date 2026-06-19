@@ -586,6 +586,29 @@ class Hash
     return to_enum(:transform_keys!) { size } unless mapping || has_block
 
     Primitive.check_frozen self
+
+    if mapping
+      mapping = Primitive.convert_with_to_hash(mapping)
+      each_pair do |key, value|
+        k = Primitive.hash_get_or_undefined(mapping, key)
+        k = has_block ? yield(key) : key if Primitive.undefined?(k)
+        delete(key)
+        store(k, value)
+      end
+    else
+      each_pair do |key, value|
+        delete(key)
+        store(yield(key), value)
+      end
+    end
+    self
+  end
+
+  def transform_keys_old!(mapping = nil)
+    has_block = block_given?
+    return to_enum(:transform_keys_old!) { size } unless mapping || has_block
+
+    Primitive.check_frozen self
     h = {}
 
     begin
