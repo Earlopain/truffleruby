@@ -16,6 +16,7 @@ import org.truffleruby.annotations.SuppressFBWarnings;
 import org.truffleruby.cext.CapturedException;
 import org.truffleruby.cext.ValueWrapper;
 import org.truffleruby.core.array.ArrayUtils;
+import org.truffleruby.core.proc.RubyProc;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
@@ -48,7 +49,7 @@ public final class MarkingService {
         @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR") ArrayList<ValueWrapper> preservedObjectList;
         private final boolean keywordsGiven;
         private Object specialVariables;
-        private final Object block;
+        private final RubyProc block;
         private CapturedException capturedException;
         private ValueWrapper markOnExitObject;
         private ArrayList<ValueWrapper> markOnExitObjects;
@@ -59,7 +60,7 @@ public final class MarkingService {
                 ExtensionCallStackEntry previous,
                 boolean keywordsGiven,
                 Object specialVariables,
-                Object block) {
+                RubyProc block) {
             this.previous = previous;
             this.keywordsGiven = keywordsGiven;
             this.specialVariables = specialVariables;
@@ -72,7 +73,7 @@ public final class MarkingService {
 
         ExtensionCallStackEntry current;
 
-        public ExtensionCallStack(Object specialVariables, Object block) {
+        public ExtensionCallStack(Object specialVariables, RubyProc block) {
             current = new ExtensionCallStackEntry(null, false, specialVariables, block);
         }
 
@@ -128,7 +129,7 @@ public final class MarkingService {
             current = current.previous;
         }
 
-        public void push(boolean keywordsGiven, Object specialVariables, Object block) {
+        public void push(boolean keywordsGiven, Object specialVariables, RubyProc block) {
             current = new ExtensionCallStackEntry(current, keywordsGiven, specialVariables, block);
         }
 
@@ -152,7 +153,7 @@ public final class MarkingService {
             current.capturedException = capturedException;
         }
 
-        public Object getBlock() {
+        public RubyProc getBlock() {
             return current.block;
         }
     }

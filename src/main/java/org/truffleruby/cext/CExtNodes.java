@@ -71,6 +71,7 @@ import org.truffleruby.core.mutex.MutexOperations;
 import org.truffleruby.core.numeric.BigIntegerOps;
 import org.truffleruby.core.numeric.BignumOperations;
 import org.truffleruby.core.numeric.RubyBignum;
+import org.truffleruby.core.proc.ProcOperations;
 import org.truffleruby.core.proc.RubyProc;
 import org.truffleruby.core.string.RubyString;
 import org.truffleruby.core.string.StringOperations;
@@ -932,6 +933,15 @@ public abstract class CExtNodes {
         @Specialization
         Object block() {
             return getLanguage().getCurrentFiber().extensionCallStack.getBlock();
+        }
+    }
+
+    @CoreMethod(names = "rb_block_lambda", onSingleton = true)
+    public abstract static class BlockLambdaNode extends CoreMethodArrayArgumentsNode {
+        @Specialization
+        Object lambda() {
+            Object block = getLanguage().getCurrentFiber().extensionCallStack.getBlock();
+            return ProcOperations.createLambdaFromBlock(getContext(), getLanguage(), block);
         }
     }
 
