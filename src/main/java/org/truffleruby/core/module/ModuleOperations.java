@@ -254,6 +254,8 @@ public abstract class ModuleOperations {
     public static ConstantLookupResult lookupScopedConstant(RubyContext context, RubyModule module, String fullName,
             boolean inherit, Node currentNode, boolean checkName) {
         int start = 0, next;
+        boolean checkInObject = true;
+        boolean firstSegment = true;
         if (fullName.startsWith("::")) {
             module = context.getCoreLibrary().objectClass;
             start += 2;
@@ -267,7 +269,8 @@ public abstract class ModuleOperations {
                     segment,
                     inherit,
                     currentNode,
-                    checkName);
+                    checkName,
+                    checkInObject);
             if (!constant.isFound()) {
                 return constant;
             } else if (constant.getConstant().getValue() instanceof RubyModule) {
@@ -279,6 +282,12 @@ public abstract class ModuleOperations {
                                 fullName.substring(0, next) + " does not refer to class/module",
                                 currentNode));
             }
+
+            if (firstSegment && constant.getConstant().getDeclaringModule() == context.getCoreLibrary().objectClass) {
+                checkInObject = false;
+            }
+
+            firstSegment = false;
             start = next + 2;
         }
 
@@ -293,7 +302,7 @@ public abstract class ModuleOperations {
                             currentNode));
         }
 
-        return lookupConstantWithInherit(context, module, lastSegment, inherit, currentNode, checkName);
+        return lookupConstantWithInherit(context, module, lastSegment, inherit, currentNode, checkName, checkInObject);
     }
 
     public static ConstantLookupResult lookupConstantWithInherit(RubyContext context, RubyModule module, String name,
