@@ -235,7 +235,7 @@ class Range
 
     min = self.begin
     max = self.end
-    max -= 1 if Primitive.is_a?(max, Integer) and exclude_end?
+    max -= 1 if exclude_end? && last % 1 == 0
     return nil if max < min
     last_admissible = nil
     stop = false
@@ -294,7 +294,7 @@ class Range
 
     case first
     when Integer
-      last -= 1 if exclude_end?
+      last -= 1 if exclude_end? && last % 1 == 0
 
       i = first
       while i <= last
@@ -499,7 +499,8 @@ class Range
     end
 
     if Primitive.is_a?(self.begin, Integer) && Primitive.is_a?(self.end, Integer)
-      last = exclude_end? ? self.end - 1 : self.end
+      last = self.end
+      last -= 1 if exclude_end? && last % 1 == 0
 
       i = last
       while i >= first
@@ -507,7 +508,8 @@ class Range
         i -= 1
       end
     elsif Primitive.nil?(self.begin) && Primitive.is_a?(self.end, Integer)
-      last = exclude_end? ? self.end - 1 : self.end
+      last = self.end
+      last -= 1 if exclude_end? && last % 1 == 0
 
       i = last
       while true
@@ -538,7 +540,7 @@ class Range
       return Float::INFINITY if Primitive.nil?(self.end) || self.end == Float::INFINITY
 
       delta = self.end - self.begin
-      delta += 1 unless exclude_end?
+      delta += 1 if !exclude_end? || self.end % 1 != 0
       return delta < 0 ? 0 : delta.floor
     end
 
@@ -595,7 +597,7 @@ class Range
     return to_a_from_enumerable unless Primitive.is_a?(self.begin, Integer) and Primitive.is_a?(self.end, Integer)
 
     fin = self.end
-    fin += 1 unless exclude_end?
+    fin += 1 if !exclude_end? || self.end % 1 != 0
 
     size = fin - self.begin
     return [] if size <= 0
